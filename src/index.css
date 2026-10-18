@@ -1,0 +1,247 @@
+@import "tailwindcss";
+
+/* ============================================
+   Wedding Invitation — Global Design System
+   Soft Ivory & Champagne Gold Aesthetic
+   ============================================ */
+
+:root {
+  --ivory: #FAF8F4;
+  --ivory-dark: #F0EDE6;
+  --ivory-mid: #F5F1EA;
+  --champagne: #B69A70;
+  --champagne-light: #D4B896;
+  --champagne-dark: #8C7355;
+  --champagne-glow: rgba(182, 154, 112, 0.3);
+  --sage: #A8B5A0;
+  --sage-light: #C5D0BE;
+  --sage-dark: #7A9070;
+  --text-primary: #3D3530;
+  --text-secondary: #6B5F54;
+  --text-muted: #9B8F85;
+  --shadow-gold: 0 4px 40px rgba(182, 154, 112, 0.15);
+  --shadow-soft: 0 2px 20px rgba(61, 53, 48, 0.08);
+  --shadow-medium: 0 8px 40px rgba(61, 53, 48, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+  background-color: var(--ivory);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Scrollbar Styling ---- */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ivory);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--champagne-light);
+  border-radius: 2px;
+}
+
+/* ---- Typography ---- */
+.font-calligraphy {
+  font-family: 'Great Vibes', cursive;
+}
+.font-arabic {
+  font-family: 'Scheherazade New', serif;
+}
+.font-serif {
+  font-family: 'Cormorant Garamond', 'Georgia', serif;
+}
+.font-sans {
+  font-family: 'Lato', sans-serif;
+}
+
+/* ---- Gold Shimmer Animation ---- */
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--champagne-dark) 0%,
+    var(--champagne-light) 30%,
+    #E8D5B0 50%,
+    var(--champagne-light) 70%,
+    var(--champagne-dark) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 4s linear infinite;
+}
+
+/* ---- Petal Float Animation ---- */
+@keyframes petal-float {
+  0% {
+    transform: translateY(-10px) rotate(0deg) translateX(0px);
+    opacity: 0;
+  }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.6; }
+  100% {
+    transform: translateY(100vh) rotate(720deg) translateX(80px);
+    opacity: 0;
+  }
+}
+
+@keyframes petal-sway {
+  0%, 100% { margin-left: 0; }
+  50% { margin-left: 30px; }
+}
+
+/* ---- Envelope Animations ---- */
+@keyframes wax-crack {
+  0% { transform: scale(1) rotate(0deg); }
+  20% { transform: scale(1.05) rotate(-2deg); }
+  40% { transform: scale(0.98) rotate(1deg); }
+  60% { transform: scale(1.02) rotate(-1deg); }
+  80% { transform: scale(0.95) rotate(2deg); }
+  100% { transform: scale(0.8) rotate(15deg); opacity: 0; }
+}
+
+@keyframes flap-open {
+  0% { transform: rotateX(0deg); }
+  100% { transform: rotateX(-180deg); }
+}
+
+@keyframes card-slide-up {
+  0% { transform: translateY(60%) scaleY(0.4); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translateY(0) scaleY(1); }
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes soft-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes line-grow {
+  0% { width: 0; opacity: 0; }
+  100% { width: 100%; opacity: 1; }
+}
+
+/* ---- Utility Classes ---- */
+.text-champagne { color: var(--champagne); }
+.text-champagne-dark { color: var(--champagne-dark); }
+.text-sage { color: var(--sage); }
+.text-ivory { color: var(--ivory); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+
+.bg-ivory { background-color: var(--ivory); }
+.bg-ivory-dark { background-color: var(--ivory-dark); }
+.bg-champagne { background-color: var(--champagne); }
+
+.border-champagne { border-color: var(--champagne); }
+.border-champagne-light { border-color: var(--champagne-light); }
+
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* ---- Glass Morphism ---- */
+.glass-card {
+  background: rgba(250, 248, 244, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(182, 154, 112, 0.2);
+}
+
+/* ---- Decorative Divider ---- */
+.divider-gold {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--champagne);
+}
+.divider-gold::before,
+.divider-gold::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--champagne-light), transparent);
+}
+
+/* ---- Section Fade ---- */
+.section-fade {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.section-fade.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Music Button ---- */
+.music-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(250, 248, 244, 0.9);
+  border: 1px solid var(--champagne-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-gold);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.music-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 20px rgba(182, 154, 112, 0.35);
+}

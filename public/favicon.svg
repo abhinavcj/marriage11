@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#8C7355"/>
+  <circle cx="50" cy="50" r="44" fill="#9A7D5E"/>
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#D4B896" stroke-width="1.5" opacity="0.6"/>
+  <text x="50" y="64" text-anchor="middle" font-family="serif" font-size="40" fill="#FAF8F4" opacity="0.95">♡</text>
+</svg>
