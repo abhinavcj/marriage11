@@ -32,15 +32,24 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip; /* clip instead of hidden — doesn't break iOS scroll */
 }
 
 body {
   font-family: 'Cormorant Garamond', 'Georgia', serif;
   background-color: var(--ivory);
   color: var(--text-primary);
-  overflow-x: hidden;
+  overflow-y: auto;           /* always scrollable */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Applied only during envelope/book phase */
+body.scroll-locked {
+  overflow: hidden;
+  height: 100dvh;
+  touch-action: none; /* prevent iOS rubber-band scroll */
 }
 
 /* Respect prefers-reduced-motion */

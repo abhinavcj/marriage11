@@ -106,19 +106,15 @@ function DetailBlock({
 
 /* ========= Main InvitationCard ========= */
 export function InvitationCard() {
-  const containerRef = useRef<HTMLDivElement>(null)
 
   return (
-    <motion.div
-      ref={containerRef}
+    <div
       id="invitation-card"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       style={{
         minHeight: '100vh',
         background: '#FAF8F4',
-        overflowX: 'hidden',
+        // No overflow:hidden here — that traps scroll on iOS.
+        // Horizontal clip is handled at html/body level.
       }}
     >
       {/* ============================
@@ -693,6 +689,6 @@ export function InvitationCard() {
           </div>
         </div>
       </Section>
-    </motion.div>
+    </div>
   )
 }
