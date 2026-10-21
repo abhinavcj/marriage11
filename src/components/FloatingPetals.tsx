@@ -63,8 +63,8 @@ export function FloatingPetals({ active, intensity = 'light' }: FloatingPetalsPr
       id: counterRef.current++,
       x: Math.random() * 100,
       size: 10 + Math.random() * 16,
-      duration: 7 + Math.random() * 8,
-      delay: Math.random() * 2,
+      duration: 6 + Math.random() * 6,
+      delay: Math.random() * 1.5,
       rotation: Math.random() * 360,
       color: PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)],
       type: Math.floor(Math.random() * 3),
@@ -73,15 +73,19 @@ export function FloatingPetals({ active, intensity = 'light' }: FloatingPetalsPr
     // Initial burst
     setPetals(Array.from({ length: count }, createPetal))
 
-    // Continuous spawn
+    // Continuous spawn — only while active
     const interval = setInterval(() => {
       setPetals(prev => {
-        const filtered = prev.filter(p => p.id > counterRef.current - 20)
+        const filtered = prev.filter(p => p.id > counterRef.current - 24)
         return [...filtered, createPetal()]
       })
-    }, 1200)
+    }, 1400)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      // Wipe petals when deactivating so no ghost elements linger
+      setPetals([])
+    }
   }, [active, count])
 
   return (

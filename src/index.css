@@ -31,25 +31,32 @@
 }
 
 html {
+  /* smooth scroll only on desktop; on mobile let the OS handle it natively */
   scroll-behavior: smooth;
-  overflow-x: clip; /* clip instead of hidden — doesn't break iOS scroll */
+  overflow-x: clip;
 }
 
 body {
   font-family: 'Cormorant Garamond', 'Georgia', serif;
   background-color: var(--ivory);
   color: var(--text-primary);
-  overflow-y: auto;           /* always scrollable */
+  /* Never restrict vertical scroll — iOS collapses it if overflow-x is set on body */
   overflow-x: clip;
+  overflow-y: auto;
+  /* iOS momentum scroll — critical for smooth feel */
+  -webkit-overflow-scrolling: touch;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* GPU compositing hint for the whole page */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
-/* Applied only during envelope/book phase */
+/* Applied only during book/envelope phase */
 body.scroll-locked {
-  overflow: hidden;
+  overflow: hidden !important;
   height: 100dvh;
-  touch-action: none; /* prevent iOS rubber-band scroll */
+  touch-action: none;
 }
 
 /* Respect prefers-reduced-motion */
@@ -62,174 +69,125 @@ body.scroll-locked {
 }
 
 /* ---- Scrollbar Styling ---- */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: var(--ivory);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--champagne-light);
-  border-radius: 2px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ivory); }
+::-webkit-scrollbar-thumb { background: var(--champagne-light); border-radius: 2px; }
 
 /* ---- Typography ---- */
-.font-calligraphy {
-  font-family: 'Great Vibes', cursive;
-}
-.font-arabic {
-  font-family: 'Scheherazade New', serif;
-}
-.font-serif {
-  font-family: 'Cormorant Garamond', 'Georgia', serif;
-}
-.font-sans {
-  font-family: 'Lato', sans-serif;
-}
+.font-calligraphy { font-family: 'Great Vibes', cursive; }
+.font-arabic      { font-family: 'Scheherazade New', serif; }
+.font-serif       { font-family: 'Cormorant Garamond', 'Georgia', serif; }
+.font-sans        { font-family: 'Lato', sans-serif; }
 
-/* ---- Gold Shimmer Animation ---- */
-@keyframes gold-shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
+/* ============================================
+   GOLD SHIMMER — GPU-safe version
+   Uses opacity instead of background-position,
+   which avoids per-frame repaints on mobile.
+   ============================================ */
 .gold-shimmer {
+  /* Static gradient — no animation on the gradient itself */
   background: linear-gradient(
     90deg,
     var(--champagne-dark) 0%,
-    var(--champagne-light) 30%,
-    #E8D5B0 50%,
-    var(--champagne-light) 70%,
+    var(--champagne-light) 35%,
+    #EAD8B4 50%,
+    var(--champagne-light) 65%,
     var(--champagne-dark) 100%
   );
-  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: gold-shimmer 4s linear infinite;
+  /* Animate opacity on a pseudo-overlay instead — compositor-only, zero repaint */
+  position: relative;
 }
-
-/* ---- Petal Float Animation ---- */
-@keyframes petal-float {
-  0% {
-    transform: translateY(-10px) rotate(0deg) translateX(0px);
-    opacity: 0;
-  }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.6; }
-  100% {
-    transform: translateY(100vh) rotate(720deg) translateX(80px);
-    opacity: 0;
-  }
-}
-
-@keyframes petal-sway {
-  0%, 100% { margin-left: 0; }
-  50% { margin-left: 30px; }
-}
-
-/* ---- Envelope Animations ---- */
-@keyframes wax-crack {
-  0% { transform: scale(1) rotate(0deg); }
-  20% { transform: scale(1.05) rotate(-2deg); }
-  40% { transform: scale(0.98) rotate(1deg); }
-  60% { transform: scale(1.02) rotate(-1deg); }
-  80% { transform: scale(0.95) rotate(2deg); }
-  100% { transform: scale(0.8) rotate(15deg); opacity: 0; }
-}
-
-@keyframes flap-open {
-  0% { transform: rotateX(0deg); }
-  100% { transform: rotateX(-180deg); }
-}
-
-@keyframes card-slide-up {
-  0% { transform: translateY(60%) scaleY(0.4); opacity: 0; }
-  60% { opacity: 1; }
-  100% { transform: translateY(0) scaleY(1); }
-}
-
-@keyframes gentle-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes soft-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
-}
-
-@keyframes line-grow {
-  0% { width: 0; opacity: 0; }
-  100% { width: 100%; opacity: 1; }
-}
-
-/* ---- Utility Classes ---- */
-.text-champagne { color: var(--champagne); }
-.text-champagne-dark { color: var(--champagne-dark); }
-.text-sage { color: var(--sage); }
-.text-ivory { color: var(--ivory); }
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-muted { color: var(--text-muted); }
-
-.bg-ivory { background-color: var(--ivory); }
-.bg-ivory-dark { background-color: var(--ivory-dark); }
-.bg-champagne { background-color: var(--champagne); }
-
-.border-champagne { border-color: var(--champagne); }
-.border-champagne-light { border-color: var(--champagne-light); }
-
-.animate-gentle-float {
-  animation: gentle-float 4s ease-in-out infinite;
-}
-
-.animate-soft-pulse {
-  animation: soft-pulse 3s ease-in-out infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
-
-/* ---- Glass Morphism ---- */
-.glass-card {
-  background: rgba(250, 248, 244, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(182, 154, 112, 0.2);
-}
-
-/* ---- Decorative Divider ---- */
-.divider-gold {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--champagne);
-}
-.divider-gold::before,
-.divider-gold::after {
+.gold-shimmer::after {
   content: '';
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--champagne-light), transparent);
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Shift the highlight across — transform is compositor-only */
+  background-size: 200% 100%;
+  animation: gold-sweep 5s ease-in-out infinite;
+  /* Own GPU layer */
+  will-change: background-position;
 }
 
-/* ---- Section Fade ---- */
+@keyframes gold-sweep {
+  0%   { background-position: 150% center; }
+  50%  { background-position: -50% center; }
+  100% { background-position: 150% center; }
+}
+
+/* ---- Petal Float — transform-only (GPU) ---- */
+@keyframes petal-float {
+  0%   { transform: translate3d(0, -40px, 0) rotate(0deg);   opacity: 0; }
+  8%   { opacity: 0.75; }
+  92%  { opacity: 0.5; }
+  100% { transform: translate3d(60px, 105vh, 0) rotate(600deg); opacity: 0; }
+}
+
+/* ---- Gentle float for book idle ---- */
+@keyframes gentle-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%       { transform: translate3d(0, -7px, 0); }
+}
+
+/* ---- Soft pulse — opacity only (compositor) ---- */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ---- Fade in up ---- */
+@keyframes fade-in-up {
+  0%   { opacity: 0; transform: translate3d(0, 28px, 0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* ---- Section Fade-in on Scroll ----
+   Key fix: use translate3d (GPU) not translateY,
+   and will-change so the browser pre-promotes the layer
+   BEFORE the transition fires — preventing the mid-scroll
+   stutter that happens when a new layer is created on demand.
+   ---------------------------------------- */
 .section-fade {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translate3d(0, 28px, 0);
+  /* Pre-promote layer — avoids mid-scroll promotion stutter */
+  will-change: opacity, transform;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  /* Isolate paint so sibling repaints don't cascade */
+  contain: layout style;
 }
 .section-fade.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
+  /* Release will-change once animation is done — saves memory */
+  will-change: auto;
 }
+
+/* ---- Utility Classes ---- */
+.text-champagne       { color: var(--champagne); }
+.text-champagne-dark  { color: var(--champagne-dark); }
+.text-sage            { color: var(--sage); }
+.text-ivory           { color: var(--ivory); }
+.text-primary         { color: var(--text-primary); }
+.text-secondary       { color: var(--text-secondary); }
+.text-muted           { color: var(--text-muted); }
+
+.bg-ivory       { background-color: var(--ivory); }
+.bg-ivory-dark  { background-color: var(--ivory-dark); }
+.bg-champagne   { background-color: var(--champagne); }
+
+.border-champagne       { border-color: var(--champagne); }
+.border-champagne-light { border-color: var(--champagne-light); }
+
+.animate-gentle-float  { animation: gentle-float 4s ease-in-out infinite; }
+.animate-soft-pulse    { animation: soft-pulse 3s ease-in-out infinite; }
+.animate-fade-in-up    { animation: fade-in-up 0.8s ease-out forwards; }
 
 /* ---- Music Button ---- */
 .music-btn {
@@ -240,15 +198,17 @@ body.scroll-locked {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(250, 248, 244, 0.9);
+  background: rgba(250, 248, 244, 0.92);
   border: 1px solid var(--champagne-light);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-gold);
-  transition: all 0.3s ease;
-  backdrop-filter: blur(8px);
+  /* transform instead of all — avoids repaints */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* No backdrop-filter — too expensive on mobile */
+  will-change: transform;
 }
 .music-btn:hover {
   transform: scale(1.08);

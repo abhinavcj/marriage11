@@ -7,20 +7,43 @@ import { AddToCalendar } from './AddToCalendar'
 const MAPS_URL =
   'https://www.google.com/maps/search/Club+6+Convention+Center+Palakkad+Kerala'
 
-/* ========= Section fade-in on scroll ========= */
+/* ========= Section fade-in on scroll =========
+   - rootMargin: trigger 60px before element enters viewport
+     so animation starts while user is still scrolling toward it,
+     not after they've already arrived (which causes a visible stutter).
+   - rAF: batch the classList write into the next paint frame
+     so it never blocks the scroll thread.
+   - disconnect immediately after triggering — no wasted observers.
+   ================================================ */
 function useSectionFade() {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
+
+    // If already in view on mount (e.g. very short pages), show immediately
+    const rect = el.getBoundingClientRect()
+    if (rect.top < window.innerHeight) {
+      el.classList.add('visible')
+      return
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.classList.add('visible')
+          // Batch into next animation frame — keeps scroll thread free
+          requestAnimationFrame(() => {
+            el.classList.add('visible')
+          })
+          observer.disconnect()
         }
       },
-      { threshold: 0.15 }
+      {
+        // Trigger 80px before element reaches viewport bottom
+        rootMargin: '0px 0px -60px 0px',
+        threshold: 0,
+      }
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -41,6 +64,7 @@ function Section({ children, style }: {
     </div>
   )
 }
+
 
 /* ========= Styled divider ========= */
 function GoldLine() {
