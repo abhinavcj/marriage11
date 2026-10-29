@@ -1,718 +1,608 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { BotanicalCorner, BotanicalSprig, FloralFrame } from './Botanicals'
 import { Countdown } from './Countdown'
 import { AddToCalendar } from './AddToCalendar'
 
 const MAPS_URL =
   'https://www.google.com/maps/search/Club+6+Convention+Center+Palakkad+Kerala'
 
-/* ========= Section fade-in on scroll =========
-   - rootMargin: trigger 60px before element enters viewport
-     so animation starts while user is still scrolling toward it,
-     not after they've already arrived (which causes a visible stutter).
-   - rAF: batch the classList write into the next paint frame
-     so it never blocks the scroll thread.
-   - disconnect immediately after triggering — no wasted observers.
-   ================================================ */
-function useSectionFade() {
+/* ---- Inline section observer (same optimised logic) ---- */
+function useFadeIn() {
   const ref = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     const el = ref.current
     if (!el) return
-
-    // If already in view on mount (e.g. very short pages), show immediately
-    const rect = el.getBoundingClientRect()
-    if (rect.top < window.innerHeight) {
+    if (el.getBoundingClientRect().top < window.innerHeight) {
       el.classList.add('visible')
       return
     }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          // Batch into next animation frame — keeps scroll thread free
-          requestAnimationFrame(() => {
-            el.classList.add('visible')
-          })
-          observer.disconnect()
-        }
-      },
-      {
-        // Trigger 80px before element reaches viewport bottom
-        rootMargin: '0px 0px -60px 0px',
-        threshold: 0,
-      }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { requestAnimationFrame(() => el.classList.add('visible')); io.disconnect() }
+    }, { rootMargin: '0px 0px -50px 0px', threshold: 0 })
+    io.observe(el)
+    return () => io.disconnect()
   }, [])
-
   return ref
 }
 
-/* ========= Section wrapper ========= */
-function Section({ children, style }: {
-  children: React.ReactNode
-  style?: React.CSSProperties
+function FadeIn({ children, delay = 0, style }: {
+  children: React.ReactNode; delay?: number; style?: React.CSSProperties
 }) {
-  const ref = useSectionFade()
+  const ref = useFadeIn()
   return (
-    <div ref={ref} className="section-fade" style={style}>
+    <div
+      ref={ref}
+      className="section-fade"
+      style={{
+        transitionDelay: `${delay}ms`,
+        ...style,
+      }}
+    >
       {children}
     </div>
   )
 }
 
-
-/* ========= Styled divider ========= */
-function GoldLine() {
+/* ---- Decorative elements ---- */
+function GoldDivider({ wide = false }: { wide?: boolean }) {
   return (
     <div style={{
-      width: '60px',
-      height: '1px',
-      background: 'linear-gradient(90deg, transparent, #B69A70, transparent)',
+      display: 'flex', alignItems: 'center', gap: 10,
       margin: '0 auto',
-    }} />
-  )
-}
-
-/* ========= Detail block ========= */
-function DetailBlock({
-  icon,
-  label,
-  value,
-  sub,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  sub?: string
-}) {
-  return (
-    <div style={{ textAlign: 'center', padding: '24px 16px' }}>
-      <div style={{ marginBottom: '12px', color: '#B69A70' }}>{icon}</div>
-      <div style={{
-        fontFamily: "'Lato', sans-serif",
-        fontSize: '10px',
-        letterSpacing: '0.25em',
-        textTransform: 'uppercase',
-        color: '#9B8F85',
-        marginBottom: '8px',
-        fontWeight: 400,
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: 'clamp(16px, 4.5vw, 22px)',
-        color: '#3D3530',
-        fontWeight: 400,
-        lineHeight: 1.3,
-      }}>
-        {value}
-      </div>
-      {sub && (
-        <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 'clamp(13px, 3.5vw, 16px)',
-          color: '#9B8F85',
-          fontStyle: 'italic',
-          marginTop: '4px',
-        }}>
-          {sub}
-        </div>
-      )}
+      width: wide ? '100%' : '60%',
+    }}>
+      <div style={{ flex: 1, height: '0.5px', background: 'linear-gradient(90deg, transparent, rgba(182,154,112,0.5))' }} />
+      <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(182,154,112,0.7)', flexShrink: 0 }} />
+      <div style={{ flex: 1, height: '0.5px', background: 'linear-gradient(90deg, rgba(182,154,112,0.5), transparent)' }} />
     </div>
   )
 }
 
-/* ========= Main InvitationCard ========= */
-export function InvitationCard() {
-
+function OrnamentRow() {
   return (
-    <div
-      id="invitation-card"
-      style={{
-        minHeight: '100vh',
-        background: '#FAF8F4',
-        // No overflow:hidden here — that traps scroll on iOS.
-        // Horizontal clip is handled at html/body level.
-      }}
-    >
-      {/* ============================
-          HERO / BISMILLAH SECTION
-          ============================ */}
-      <div
+    <svg viewBox="0 0 300 22" fill="none" style={{ width: '100%', maxWidth: 300 }} aria-hidden="true">
+      <line x1="0" y1="11" x2="125" y2="11" stroke="url(#og1)" strokeWidth="0.6" />
+      <circle cx="137" cy="11" r="2" fill="#B69A70" opacity="0.5" />
+      <circle cx="150" cy="11" r="4" fill="#B69A70" opacity="0.7" />
+      <circle cx="163" cy="11" r="2" fill="#B69A70" opacity="0.5" />
+      <line x1="175" y1="11" x2="300" y2="11" stroke="url(#og2)" strokeWidth="0.6" />
+      <defs>
+        <linearGradient id="og1"><stop offset="0%" stopColor="transparent" /><stop offset="100%" stopColor="#B69A70" stopOpacity="0.6" /></linearGradient>
+        <linearGradient id="og2"><stop offset="0%" stopColor="#B69A70" stopOpacity="0.6" /><stop offset="100%" stopColor="transparent" /></linearGradient>
+      </defs>
+    </svg>
+  )
+}
+
+function LeafSpray({ flip = false }: { flip?: boolean }) {
+  return (
+    <svg viewBox="0 0 200 44" fill="none"
+      style={{ width: '100%', maxWidth: 220, transform: flip ? 'scaleX(-1)' : undefined }}
+      aria-hidden="true">
+      {/* Stem */}
+      <path d="M100 36 C85 28 65 22 45 26 C25 30 10 38 5 40" stroke="#B69A70" strokeWidth="0.9" strokeLinecap="round" opacity="0.55" />
+      <path d="M100 36 C115 28 135 22 155 26 C175 30 190 38 195 40" stroke="#B69A70" strokeWidth="0.9" strokeLinecap="round" opacity="0.55" />
+      {/* Leaves left */}
+      <ellipse cx="60" cy="24" rx="12" ry="5" fill="#A8B5A0" opacity="0.45" transform="rotate(15 60 24)" />
+      <ellipse cx="38" cy="30" rx="10" ry="4" fill="#A8B5A0" opacity="0.38" transform="rotate(10 38 30)" />
+      <ellipse cx="80" cy="20" rx="10" ry="4" fill="#A8B5A0" opacity="0.35" transform="rotate(20 80 20)" />
+      {/* Leaves right */}
+      <ellipse cx="140" cy="24" rx="12" ry="5" fill="#A8B5A0" opacity="0.45" transform="rotate(-15 140 24)" />
+      <ellipse cx="162" cy="30" rx="10" ry="4" fill="#A8B5A0" opacity="0.38" transform="rotate(-10 162 30)" />
+      <ellipse cx="120" cy="20" rx="10" ry="4" fill="#A8B5A0" opacity="0.35" transform="rotate(-20 120 20)" />
+      {/* Center flower */}
+      <circle cx="100" cy="14" r="5.5" fill="#D4B896" opacity="0.65" />
+      <circle cx="100" cy="14" r="3" fill="#B69A70" opacity="0.85" />
+      <circle cx="88" cy="16" r="2.5" fill="#B69A70" opacity="0.4" />
+      <circle cx="112" cy="16" r="2.5" fill="#B69A70" opacity="0.4" />
+    </svg>
+  )
+}
+
+function CornerAccent({ pos }: { pos: 'tl' | 'tr' | 'bl' | 'br' }) {
+  const styles: Record<string, React.CSSProperties> = {
+    tl: { top: 0, left: 0 },
+    tr: { top: 0, right: 0, transform: 'scaleX(-1)' },
+    bl: { bottom: 0, left: 0, transform: 'scaleY(-1)' },
+    br: { bottom: 0, right: 0, transform: 'scale(-1)' },
+  }
+  return (
+    <div style={{ position: 'absolute', width: 'clamp(60px,12vw,90px)',
+      height: 'clamp(60px,12vw,90px)', opacity: 0.55, pointerEvents: 'none', ...styles[pos] }}
+      aria-hidden="true">
+      <svg viewBox="0 0 80 80" fill="none">
+        <path d="M6 74 C20 56 40 40 62 16" stroke="#B69A70" strokeWidth="1" strokeLinecap="round" opacity="0.7" />
+        <ellipse cx="24" cy="58" rx="11" ry="4.5" fill="#A8B5A0" opacity="0.5" transform="rotate(-38 24 58)" />
+        <ellipse cx="40" cy="44" rx="9" ry="4" fill="#A8B5A0" opacity="0.42" transform="rotate(-55 40 44)" />
+        <ellipse cx="54" cy="30" rx="8" ry="3.5" fill="#A8B5A0" opacity="0.36" transform="rotate(-68 54 30)" />
+        <circle cx="16" cy="66" r="2.5" fill="#B69A70" opacity="0.45" />
+        <circle cx="30" cy="52" r="2" fill="#B69A70" opacity="0.38" />
+      </svg>
+    </div>
+  )
+}
+
+/* ============================================================
+   Main InvitationCard — one continuous letter-paper page
+   ============================================================ */
+export function InvitationCard() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg, #FDFAF4 0%, #F9F5EE 40%, #FAF7F1 100%)',
+      position: 'relative',
+    }}>
+      {/* Subtle paper-line texture */}
+      <div aria-hidden="true" style={{
+        position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0,
+        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(182,154,112,0.028) 30px, rgba(182,154,112,0.028) 31px)',
+      }} />
+
+      {/* ---- Content column ---- */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
         style={{
+          maxWidth: '640px',
+          margin: '0 auto',
+          padding: 'clamp(48px,8vw,80px) clamp(20px,5vw,48px) clamp(60px,10vw,100px)',
           position: 'relative',
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 'clamp(60px, 10vw, 100px) clamp(20px, 6vw, 60px)',
-          textAlign: 'center',
-          background: `
-            radial-gradient(ellipse at 50% 0%, rgba(182,154,112,0.08) 0%, transparent 60%),
-            linear-gradient(180deg, #FAF8F4 0%, #F5F1EA 50%, #FAF8F4 100%)
-          `,
+          zIndex: 1,
         }}
       >
-        {/* Corner botanicals */}
-        <div style={{ position: 'absolute', top: 0, left: 0, width: 'clamp(80px,15vw,140px)', opacity: 0.6 }}>
-          <BotanicalCorner />
-        </div>
-        <div style={{ position: 'absolute', top: 0, right: 0, width: 'clamp(80px,15vw,140px)', opacity: 0.6 }}>
-          <BotanicalCorner flip />
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, left: 0, width: 'clamp(80px,15vw,140px)', opacity: 0.6,
-          transform: 'scaleY(-1)' }}>
-          <BotanicalCorner />
-        </div>
-        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 'clamp(80px,15vw,140px)', opacity: 0.6,
-          transform: 'scale(-1)' }}>
-          <BotanicalCorner />
-        </div>
 
-        {/* Gold border frame */}
-        <div style={{
+        {/* ---- Running gold border frame (full page height) ---- */}
+        <div aria-hidden="true" style={{
           position: 'absolute',
-          inset: 'clamp(12px, 3vw, 24px)',
-          border: '1px solid rgba(182, 154, 112, 0.2)',
+          top: 'clamp(16px,3vw,28px)', bottom: 'clamp(16px,3vw,28px)',
+          left: 'clamp(8px,2vw,16px)', right: 'clamp(8px,2vw,16px)',
+          border: '1px solid rgba(182,154,112,0.22)',
           borderRadius: '2px',
           pointerEvents: 'none',
         }} />
+        <div aria-hidden="true" style={{
+          position: 'absolute',
+          top: 'clamp(22px,4vw,36px)', bottom: 'clamp(22px,4vw,36px)',
+          left: 'clamp(13px,3vw,22px)', right: 'clamp(13px,3vw,22px)',
+          border: '0.5px solid rgba(182,154,112,0.1)',
+          borderRadius: '1px',
+          pointerEvents: 'none',
+        }} />
 
-        {/* Bismillah */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 1 }}
-        >
-          <div
-            className="font-arabic"
-            style={{
-              fontSize: 'clamp(26px, 7vw, 44px)',
-              color: '#B69A70',
-              lineHeight: 1.6,
-              marginBottom: '10px',
-              direction: 'rtl',
-            }}
-          >
+        {/* Corner accents */}
+        <CornerAccent pos="tl" />
+        <CornerAccent pos="tr" />
+        <CornerAccent pos="bl" />
+        <CornerAccent pos="br" />
+
+        {/* ============================
+            BISMILLAH
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center', paddingTop: 'clamp(16px,4vw,28px)' }}>
+          <div style={{
+            fontFamily: "'Scheherazade New', serif",
+            fontSize: 'clamp(22px, 6vw, 34px)',
+            color: '#B69A70',
+            direction: 'rtl',
+            lineHeight: 1.7,
+            marginBottom: '6px',
+          }}>
             بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
           </div>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(11px, 3vw, 14px)',
-            color: '#9B8F85',
-            letterSpacing: '0.1em',
+            fontSize: 'clamp(11px, 3vw, 13px)',
+            color: '#A89880',
             fontStyle: 'italic',
-            marginBottom: '40px',
+            letterSpacing: '0.08em',
           }}>
             In the name of Allah, the Most Gracious, the Most Merciful
           </div>
-        </motion.div>
+        </FadeIn>
 
-        <GoldLine />
+        <div style={{ height: 'clamp(28px,5vw,44px)' }} />
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }} delay={80}>
+          <OrnamentRow />
+        </FadeIn>
+        <div style={{ height: 'clamp(24px,4vw,36px)' }} />
 
-        {/* Tagline */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 1 }}
-          style={{ margin: '32px 0 16px' }}
-        >
+        {/* ============================
+            HEADING
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }} delay={100}>
           <span style={{
             fontFamily: "'Lato', sans-serif",
-            fontSize: 'clamp(9px, 2.5vw, 11px)',
+            fontSize: 'clamp(8px, 2vw, 10px)',
             letterSpacing: '0.35em',
             textTransform: 'uppercase',
-            color: '#9B8F85',
+            color: '#A89880',
             fontWeight: 300,
           }}>
             The Wedding Celebration of
           </span>
-        </motion.div>
+        </FadeIn>
 
-        {/* Names */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 1 }}
-        >
+        <div style={{ height: 'clamp(16px,3vw,24px)' }} />
+
+        {/* ============================
+            COUPLE NAMES
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }} delay={150}>
           <h1 style={{ margin: 0 }}>
-            <div
-              className="font-calligraphy gold-shimmer"
-              style={{
-                fontSize: 'clamp(44px, 12vw, 80px)',
-                lineHeight: 1.05,
-              }}
-            >
+            <div className="font-calligraphy gold-shimmer"
+              style={{ fontSize: 'clamp(44px,11vw,72px)', lineHeight: 1.08 }}>
               Dr. Amrin Fatin
             </div>
           </h1>
+        </FadeIn>
 
+        <FadeIn style={{ textAlign: 'center', margin: 'clamp(4px,1.5vw,8px) 0' }} delay={180}>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(18px, 5vw, 28px)',
+            fontSize: 'clamp(20px,5vw,30px)',
             color: '#A8B5A0',
-            margin: '8px 0',
             fontStyle: 'italic',
             fontWeight: 300,
           }}>
             &amp;
           </div>
+        </FadeIn>
 
-          <div
-            className="font-calligraphy gold-shimmer"
-            style={{
-              fontSize: 'clamp(36px, 10vw, 68px)',
-              lineHeight: 1.1,
-            }}
-          >
+        <FadeIn style={{ textAlign: 'center' }} delay={210}>
+          <div className="font-calligraphy gold-shimmer"
+            style={{ fontSize: 'clamp(34px,9vw,58px)', lineHeight: 1.1 }}>
             Dr. Muhammed Sanad Nafih
           </div>
-        </motion.div>
+        </FadeIn>
 
-        {/* Botanical sprig divider */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
-          style={{ width: 'clamp(180px, 50vw, 280px)', margin: '24px auto 0' }}
-        >
-          <BotanicalSprig />
-        </motion.div>
+        <div style={{ height: 'clamp(28px,5vw,40px)' }} />
 
-        {/* Scroll hint */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ delay: 2, duration: 2, repeat: Infinity }}
-          style={{
-            position: 'absolute',
-            bottom: 32,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-          aria-hidden="true"
-        >
-          <svg width="20" height="32" viewBox="0 0 20 32" fill="none">
-            <rect x="1" y="1" width="18" height="30" rx="9" stroke="#B69A70" strokeWidth="1.2" opacity="0.5" />
-            <motion.circle
-              cx="10" cy="10" r="3" fill="#B69A70" opacity="0.6"
-              animate={{ cy: [10, 20, 10] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-            />
-          </svg>
-        </motion.div>
-      </div>
+        {/* Botanical spray */}
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }} delay={240}>
+          <LeafSpray />
+        </FadeIn>
 
-      {/* ============================
-          INVITATION MESSAGE
-          ============================ */}
-      <Section
-        style={{
-          padding: 'clamp(60px, 10vw, 100px) clamp(24px, 8vw, 80px)',
-          maxWidth: '720px',
-          margin: '0 auto',
-          textAlign: 'center',
-        }}
-      >
-        <FloralFrame style={{ width: '100%', maxWidth: 400, margin: '0 auto 40px' }} />
+        <div style={{ height: 'clamp(28px,5vw,44px)' }} />
 
-        <p style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 'clamp(16px, 4.5vw, 22px)',
-          color: '#6B5F54',
-          lineHeight: 1.9,
-          fontStyle: 'italic',
-          fontWeight: 300,
-        }}>
-          Two hearts, one beautiful beginning.
-        </p>
-
-        <div style={{ height: 'clamp(16px, 4vw, 28px)' }} />
-
-        <p style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 'clamp(14px, 3.8vw, 18px)',
-          color: '#9B8F85',
-          lineHeight: 2,
-          fontWeight: 300,
-          maxWidth: '560px',
-          margin: '0 auto',
-        }}>
-          With the blessings of Almighty Allah, we joyfully invite you to celebrate our
-          <span style={{ color: '#B69A70', fontStyle: 'italic' }}> Nikah </span>
-          and share in the happiness of our special day.
-        </p>
-
-        <FloralFrame style={{ width: '100%', maxWidth: 400, margin: '40px auto 0',
-          transform: 'scaleX(-1)' }} />
-      </Section>
-
-      {/* ============================
-          WEDDING DETAILS
-          ============================ */}
-      <Section
-        style={{
-          background: 'linear-gradient(180deg, #FAF8F4 0%, #F0EDE6 50%, #FAF8F4 100%)',
-          padding: 'clamp(60px, 10vw, 100px) clamp(20px, 6vw, 40px)',
-        }}
-      >
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          {/* Section label */}
-          <div style={{
-            fontFamily: "'Lato', sans-serif",
-            fontSize: '10px',
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: '#9B8F85',
-            marginBottom: '40px',
+        {/* ============================
+            INVITATION TEXT
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }} delay={120}>
+          <p style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 'clamp(17px,4.5vw,22px)',
+            color: '#6B5F54',
+            lineHeight: 1.9,
+            fontStyle: 'italic',
             fontWeight: 300,
+            maxWidth: '500px',
+            margin: '0 auto',
           }}>
-            Wedding Details
-          </div>
+            Two hearts, one beautiful beginning.
+          </p>
+          <div style={{ height: 'clamp(14px,3vw,20px)' }} />
+          <p style={{
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 'clamp(14px,3.8vw,18px)',
+            color: '#8A7C70',
+            lineHeight: 2.0,
+            fontWeight: 300,
+            maxWidth: '480px',
+            margin: '0 auto',
+          }}>
+            With the blessings of Almighty Allah,
+            we joyfully invite you to celebrate our
+            <span style={{ color: '#B69A70', fontStyle: 'italic' }}> Nikah </span>
+            and share in the happiness of our special day.
+          </p>
+        </FadeIn>
 
-          {/* Gold border box */}
+        <div style={{ height: 'clamp(36px,7vw,56px)' }} />
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoldDivider wide />
+        </FadeIn>
+        <div style={{ height: 'clamp(36px,7vw,56px)' }} />
+
+        {/* ============================
+            WEDDING DETAILS BOX
+            ============================ */}
+        <FadeIn>
           <div style={{
-            border: '1px solid rgba(182, 154, 112, 0.3)',
-            borderRadius: '4px',
-            padding: 'clamp(32px, 6vw, 56px) clamp(20px, 5vw, 40px)',
+            border: '1px solid rgba(182,154,112,0.28)',
+            borderRadius: '3px',
+            padding: 'clamp(28px,5vw,44px) clamp(16px,4vw,36px)',
             position: 'relative',
-            background: 'rgba(250, 248, 244, 0.8)',
+            background: 'rgba(253,250,244,0.6)',
           }}>
-            {/* Corner dots */}
-            {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(pos => (
-              <div
-                key={pos}
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: '#B69A70',
-                  opacity: 0.5,
-                  ...(pos === 'top-left' ? { top: -3, left: -3 } :
-                    pos === 'top-right' ? { top: -3, right: -3 } :
-                    pos === 'bottom-left' ? { bottom: -3, left: -3 } :
-                    { bottom: -3, right: -3 }),
-                }}
-              />
+            {/* Corner diamonds */}
+            {[
+              { top: -4, left: -4 }, { top: -4, right: -4 },
+              { bottom: -4, left: -4 }, { bottom: -4, right: -4 },
+            ].map((pos, i) => (
+              <div key={i} aria-hidden="true" style={{
+                position: 'absolute', width: 8, height: 8,
+                background: '#B69A70', opacity: 0.55,
+                transform: 'rotate(45deg)',
+                ...pos,
+              }} />
             ))}
 
-            {/* Details grid */}
+            {/* Date row */}
+            <div style={{ textAlign: 'center', marginBottom: 'clamp(20px,4vw,32px)' }}>
+              <div style={{
+                fontFamily: "'Lato', sans-serif",
+                fontSize: 'clamp(8px,2vw,10px)',
+                letterSpacing: '0.3em',
+                textTransform: 'uppercase',
+                color: '#A89880',
+                marginBottom: '8px',
+                fontWeight: 300,
+              }}>Date</div>
+              <div style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: 'clamp(20px,5vw,28px)',
+                color: '#3D3530',
+                fontWeight: 400,
+              }}>
+                Sunday, 17 January 2027
+              </div>
+            </div>
+
+            {/* Thin rule */}
+            <div style={{ height: '0.5px', background: 'linear-gradient(90deg, transparent, rgba(182,154,112,0.3), transparent)', marginBottom: 'clamp(20px,4vw,32px)' }} />
+
+            {/* Time + Venue split */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: 'clamp(16px, 4vw, 0)',
-              position: 'relative',
+              gridTemplateColumns: '1fr 1px 1fr',
+              gap: 0,
+              alignItems: 'center',
             }}>
-              <DetailBlock
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.2" />
-                    <line x1="3" y1="9" x2="21" y2="9" stroke="currentColor" strokeWidth="1.2" />
-                    <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                    <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                  </svg>
-                }
-                label="Date"
-                value="Sunday, 17 January 2027"
-              />
-
-              {/* Vertical divider */}
-              <div style={{
-                position: 'absolute',
-                top: '20%',
-                bottom: '20%',
-                left: '33.3%',
-                width: '1px',
-                background: 'linear-gradient(180deg, transparent, rgba(182,154,112,0.3), transparent)',
-              }} />
-              <div style={{
-                position: 'absolute',
-                top: '20%',
-                bottom: '20%',
-                left: '66.6%',
-                width: '1px',
-                background: 'linear-gradient(180deg, transparent, rgba(182,154,112,0.3), transparent)',
-              }} />
-
-              <DetailBlock
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <div style={{ textAlign: 'center', padding: '0 16px' }}>
+                <div style={{ color: '#B69A70', marginBottom: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.2" />
-                    <polyline points="12 7 12 12 15 15" stroke="currentColor" strokeWidth="1.2"
+                    <polyline points="12 7 12 12 15.5 14.5" stroke="currentColor" strokeWidth="1.2"
                       strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                }
-                label="Ceremony"
-                value="Nikah — 11:00 AM"
-                sub="IST"
-              />
+                </div>
+                <div style={{
+                  fontFamily: "'Lato', sans-serif", fontSize: '9px',
+                  letterSpacing: '0.25em', textTransform: 'uppercase', color: '#A89880',
+                  marginBottom: 6, fontWeight: 300,
+                }}>Nikah Ceremony</div>
+                <div style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 'clamp(16px,4vw,22px)', color: '#3D3530',
+                }}>11:00 AM</div>
+                <div style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 'clamp(11px,3vw,14px)', color: '#A89880', fontStyle: 'italic',
+                }}>IST</div>
+              </div>
 
-              <DetailBlock
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              {/* Vertical separator */}
+              <div style={{
+                width: '1px', alignSelf: 'stretch',
+                background: 'linear-gradient(180deg, transparent, rgba(182,154,112,0.3), transparent)',
+              }} />
+
+              <div style={{ textAlign: 'center', padding: '0 16px' }}>
+                <div style={{ color: '#B69A70', marginBottom: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
                       stroke="currentColor" strokeWidth="1.2" />
                     <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.2" />
                   </svg>
-                }
-                label="Venue"
-                value="Club 6 Convention Center"
-                sub="Palakkad, Kerala"
-              />
+                </div>
+                <div style={{
+                  fontFamily: "'Lato', sans-serif", fontSize: '9px',
+                  letterSpacing: '0.25em', textTransform: 'uppercase', color: '#A89880',
+                  marginBottom: 6, fontWeight: 300,
+                }}>Venue</div>
+                <div style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 'clamp(14px,3.8vw,20px)', color: '#3D3530', lineHeight: 1.3,
+                }}>Club 6 Convention Center</div>
+                <div style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  fontSize: 'clamp(11px,3vw,14px)', color: '#A89880', fontStyle: 'italic',
+                }}>Palakkad, Kerala</div>
+              </div>
             </div>
           </div>
-        </div>
-      </Section>
+        </FadeIn>
 
-      {/* ============================
-          COUNTDOWN
-          ============================ */}
-      <Section
-        style={{
-          padding: 'clamp(60px, 10vw, 100px) clamp(20px, 6vw, 40px)',
-          textAlign: 'center',
-          maxWidth: '800px',
-          margin: '0 auto',
-        }}
-      >
-        <div style={{
-          fontFamily: "'Lato', sans-serif",
-          fontSize: '10px',
-          letterSpacing: '0.3em',
-          textTransform: 'uppercase',
-          color: '#9B8F85',
-          marginBottom: '16px',
-          fontWeight: 300,
-        }}>
-          Counting Down
-        </div>
-        <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 'clamp(16px, 4vw, 22px)',
-          color: '#6B5F54',
-          fontStyle: 'italic',
-          marginBottom: '40px',
-          fontWeight: 300,
-        }}>
-          Until our special day
-        </div>
+        <div style={{ height: 'clamp(40px,8vw,64px)' }} />
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoldDivider />
+        </FadeIn>
+        <div style={{ height: 'clamp(40px,8vw,64px)' }} />
 
-        <Countdown />
-      </Section>
-
-      {/* ============================
-          LOCATION & ACTIONS
-          ============================ */}
-      <Section
-        style={{
-          background: 'linear-gradient(180deg, #FAF8F4 0%, #F0EDE6 100%)',
-          padding: 'clamp(60px, 10vw, 100px) clamp(20px, 6vw, 40px)',
-        }}
-      >
-        <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+        {/* ============================
+            COUNTDOWN
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }}>
           <div style={{
             fontFamily: "'Lato', sans-serif",
-            fontSize: '10px',
-            letterSpacing: '0.3em',
-            textTransform: 'uppercase',
-            color: '#9B8F85',
-            marginBottom: '32px',
-            fontWeight: 300,
-          }}>
-            Find Us
-          </div>
-
+            fontSize: '9px', letterSpacing: '0.3em',
+            textTransform: 'uppercase', color: '#A89880',
+            marginBottom: '6px', fontWeight: 300,
+          }}>Counting Down To</div>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(22px, 6vw, 32px)',
-            color: '#3D3530',
-            marginBottom: '8px',
+            fontSize: 'clamp(14px,4vw,18px)',
+            color: '#8A7C70', fontStyle: 'italic',
+            marginBottom: 'clamp(24px,4vw,36px)',
           }}>
-            Club 6 Convention Center
+            Our Special Day
           </div>
-          <div style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(14px, 3.5vw, 18px)',
-            color: '#9B8F85',
-            fontStyle: 'italic',
-            marginBottom: '40px',
-          }}>
-            Palakkad, Kerala
-          </div>
+          <Countdown />
+        </FadeIn>
 
-          {/* Actions */}
+        <div style={{ height: 'clamp(40px,8vw,64px)' }} />
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoldDivider />
+        </FadeIn>
+        <div style={{ height: 'clamp(40px,8vw,64px)' }} />
+
+        {/* ============================
+            LOCATION + ACTIONS
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }}>
           <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '16px',
-            justifyContent: 'center',
-            alignItems: 'center',
+            fontFamily: "'Lato', sans-serif",
+            fontSize: '9px', letterSpacing: '0.3em',
+            textTransform: 'uppercase', color: '#A89880',
+            marginBottom: 'clamp(20px,4vw,32px)', fontWeight: 300,
+          }}>Find the Venue</div>
+
+          <div style={{
+            display: 'flex', flexWrap: 'wrap',
+            gap: 14, justifyContent: 'center', alignItems: 'center',
           }}>
-            {/* Directions button */}
+            {/* Directions */}
             <a
               id="get-directions-btn"
               href={MAPS_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '13px 28px',
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '13px 26px',
                 background: 'linear-gradient(135deg, #B69A70 0%, #9A7D5E 100%)',
-                color: '#FAF8F4',
+                color: '#FDFAF4',
                 fontFamily: "'Lato', sans-serif",
-                fontSize: '11px',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                textDecoration: 'none',
-                borderRadius: '2px',
-                transition: 'all 0.3s ease',
-                boxShadow: '0 4px 20px rgba(182, 154, 112, 0.3)',
-                fontWeight: 400,
+                fontSize: '10px', letterSpacing: '0.2em',
+                textTransform: 'uppercase', textDecoration: 'none',
+                borderRadius: '2px', fontWeight: 400,
+                boxShadow: '0 4px 20px rgba(182,154,112,0.3)',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                willChange: 'transform',
               }}
               onMouseEnter={e => {
                 (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)'
-                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 30px rgba(182, 154, 112, 0.4)'
+                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 28px rgba(182,154,112,0.4)'
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0)'
-                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(182, 154, 112, 0.3)'
+                (e.currentTarget as HTMLAnchorElement).style.transform = ''
+                ;(e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(182,154,112,0.3)'
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
                   fill="currentColor" opacity="0.9" />
-                <circle cx="12" cy="9" r="2.5" fill="#FAF8F4" />
+                <circle cx="12" cy="9" r="2.5" fill="#FDFAF4" />
               </svg>
               Get Directions
             </a>
 
             <AddToCalendar />
           </div>
-        </div>
-      </Section>
+        </FadeIn>
 
-      {/* ============================
-          CLOSING MESSAGE
-          ============================ */}
-      <Section
-        style={{
-          padding: 'clamp(80px, 12vw, 120px) clamp(24px, 8vw, 60px)',
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Background botanical accent */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `
-            radial-gradient(ellipse at 50% 50%, rgba(168,181,160,0.06) 0%, transparent 70%)
-          `,
-          pointerEvents: 'none',
-        }} />
+        <div style={{ height: 'clamp(48px,9vw,72px)' }} />
 
-        <div style={{ maxWidth: '600px', margin: '0 auto', position: 'relative' }}>
-          {/* Botanical sprig above */}
-          <div style={{ width: 'clamp(160px, 40vw, 240px)', margin: '0 auto 40px' }}>
-            <BotanicalSprig />
-          </div>
+        {/* Full-width botanical */}
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <LeafSpray flip />
+        </FadeIn>
 
-          <div style={{
-            width: '48px',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, #B69A70, transparent)',
-            margin: '0 auto 40px',
-          }} />
+        <div style={{ height: 'clamp(36px,6vw,52px)' }} />
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <OrnamentRow />
+        </FadeIn>
+        <div style={{ height: 'clamp(36px,6vw,52px)' }} />
 
+        {/* ============================
+            CLOSING MESSAGE
+            ============================ */}
+        <FadeIn style={{ textAlign: 'center' }}>
           <p style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(18px, 5vw, 26px)',
+            fontSize: 'clamp(17px,4.8vw,24px)',
             color: '#6B5F54',
-            lineHeight: 1.8,
+            lineHeight: 1.9,
             fontStyle: 'italic',
             fontWeight: 300,
-            marginBottom: '24px',
+            maxWidth: '460px',
+            margin: '0 auto',
           }}>
-            "Your presence will make our celebration even more beautiful."
+            "Your presence will make our celebration<br />even more beautiful."
           </p>
+        </FadeIn>
 
+        <div style={{ height: 'clamp(24px,4vw,36px)' }} />
+
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoldDivider />
+        </FadeIn>
+
+        <div style={{ height: 'clamp(24px,4vw,36px)' }} />
+
+        {/* Couple sign-off */}
+        <FadeIn style={{ textAlign: 'center' }}>
           <div style={{
-            width: '32px',
-            height: '1px',
-            background: 'rgba(182, 154, 112, 0.4)',
-            margin: '0 auto 24px',
-          }} />
-
-          <div
-            className="font-calligraphy gold-shimmer"
-            style={{
-              fontSize: 'clamp(36px, 9vw, 58px)',
-              lineHeight: 1.2,
-            }}
-          >
-            With love, Amrin &amp; Sanad
+            fontFamily: "'Cormorant Garamond', serif",
+            fontSize: 'clamp(12px,3vw,15px)',
+            color: '#A89880',
+            letterSpacing: '0.1em',
+            marginBottom: '8px',
+            fontStyle: 'italic',
+          }}>
+            With love,
           </div>
-
-          {/* Final botanical */}
-          <div style={{ width: 'clamp(120px, 30vw, 180px)', margin: '36px auto 0',
-            transform: 'scaleX(-1)' }}>
-            <BotanicalSprig />
+          <div className="font-calligraphy gold-shimmer"
+            style={{ fontSize: 'clamp(38px,9vw,58px)', lineHeight: 1.15 }}>
+            Amrin &amp; Sanad
           </div>
+        </FadeIn>
 
-          {/* Arabic closing */}
-          <div
-            className="font-arabic"
-            style={{
-              fontSize: 'clamp(18px, 5vw, 28px)',
-              color: '#B69A70',
-              direction: 'rtl',
-              marginTop: '48px',
-              opacity: 0.7,
-            }}
-          >
+        <div style={{ height: 'clamp(36px,6vw,52px)' }} />
+
+        {/* Arabic closing blessing */}
+        <FadeIn style={{ textAlign: 'center' }}>
+          <div style={{
+            fontFamily: "'Scheherazade New', serif",
+            fontSize: 'clamp(18px,5vw,26px)',
+            color: '#B69A70',
+            direction: 'rtl',
+            lineHeight: 1.6,
+            opacity: 0.8,
+          }}>
             بَارَكَ اللَّهُ لَكُم
           </div>
           <div style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(11px, 3vw, 13px)',
-            color: '#9B8F85',
+            fontSize: 'clamp(11px,2.8vw,13px)',
+            color: '#A89880',
             fontStyle: 'italic',
-            marginTop: '6px',
+            marginTop: '5px',
             letterSpacing: '0.08em',
           }}>
             May Allah bless you
           </div>
-        </div>
+        </FadeIn>
 
-        {/* Footer */}
-        <div style={{
-          marginTop: '80px',
-          paddingTop: '32px',
-          borderTop: '1px solid rgba(182, 154, 112, 0.15)',
-        }}>
+        <div style={{ height: 'clamp(48px,8vw,64px)' }} />
+
+        {/* Footer rule */}
+        <FadeIn style={{ display: 'flex', justifyContent: 'center' }}>
+          <GoldDivider wide />
+        </FadeIn>
+
+        <FadeIn style={{ textAlign: 'center', paddingTop: 'clamp(16px,3vw,24px)', paddingBottom: 'clamp(16px,3vw,28px)' }}>
           <div style={{
             fontFamily: "'Lato', sans-serif",
-            fontSize: '10px',
-            color: '#C0B4AA',
-            letterSpacing: '0.15em',
-            fontWeight: 300,
+            fontSize: '9px', color: '#C0B0A0',
+            letterSpacing: '0.2em', fontWeight: 300,
           }}>
-            17 · 01 · 2027
+            17 · 01 · 2027 &nbsp;·&nbsp; Palakkad, Kerala
           </div>
-        </div>
-      </Section>
+        </FadeIn>
+
+      </motion.div>
     </div>
   )
 }

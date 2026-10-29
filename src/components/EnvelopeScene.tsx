@@ -1,510 +1,382 @@
 import { useState, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { FloatingPetals } from './FloatingPetals'
 
 interface EnvelopeSceneProps {
   onOpen: () => void
 }
 
-/* ---- Botanical corner SVG (inline for self-containment) ---- */
-function BookCorner({ flip = false }: { flip?: boolean }) {
+/* ---- Wax Seal ---- */
+function WaxSeal({ breaking }: { breaking: boolean }) {
   return (
-    <svg
-      viewBox="0 0 60 60"
-      fill="none"
-      style={{
-        width: '100%',
-        height: '100%',
-        transform: flip ? 'scale(-1,1)' : undefined,
-      }}
-      aria-hidden="true"
+    <motion.div
+      animate={
+        breaking
+          ? { scale: [1, 1.15, 0], rotate: [0, -8, 18], opacity: [1, 1, 0] }
+          : {}
+      }
+      transition={{ duration: 0.55, ease: 'easeIn' }}
+      style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}
     >
-      <path d="M5 55 C15 40 30 28 45 10" stroke="#C4A87A" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-      <ellipse cx="20" cy="43" rx="8" ry="3.5" fill="#A8B5A0" opacity="0.5" transform="rotate(-40 20 43)" />
-      <ellipse cx="32" cy="32" rx="7" ry="3" fill="#A8B5A0" opacity="0.4" transform="rotate(-55 32 32)" />
-      <ellipse cx="41" cy="20" rx="6" ry="2.5" fill="#A8B5A0" opacity="0.35" transform="rotate(-70 41 20)" />
-      <circle cx="14" cy="50" r="2" fill="#C4A87A" opacity="0.5" />
-      <circle cx="25" cy="39" r="1.5" fill="#C4A87A" opacity="0.4" />
+      <svg width="72" height="72" viewBox="0 0 100 100" fill="none" aria-hidden="true"
+        style={{ filter: 'drop-shadow(0 3px 10px rgba(120,85,40,0.45))' }}>
+        <circle cx="50" cy="50" r="46" fill="rgba(120,85,40,0.12)" />
+        <circle cx="50" cy="50" r="43" fill="#9A7040" />
+        <circle cx="50" cy="50" r="39" fill="#8A6030" />
+        <circle cx="50" cy="50" r="35" fill="#7A5020" />
+        {/* Sunburst ring */}
+        {Array.from({ length: 16 }, (_, i) => {
+          const a = (i * 22.5 * Math.PI) / 180
+          return (
+            <line key={i}
+              x1={50 + 33 * Math.cos(a)} y1={50 + 33 * Math.sin(a)}
+              x2={50 + 40 * Math.cos(a)} y2={50 + 40 * Math.sin(a)}
+              stroke="#C4A070" strokeWidth="1.5" opacity="0.7"
+            />
+          )
+        })}
+        <circle cx="50" cy="50" r="28" fill="#6A4010" />
+        <text x="50" y="55" textAnchor="middle"
+          fontFamily="'Great Vibes', cursive" fontSize="15" fill="#FAF3E0" opacity="0.95">
+          A &amp; S
+        </text>
+        {/* Shine */}
+        <ellipse cx="40" cy="40" rx="7" ry="4" fill="white" opacity="0.07"
+          transform="rotate(-25 40 40)" />
+      </svg>
+    </motion.div>
+  )
+}
+
+/* ---- Inline botanical strip ---- */
+function BotanicalStrip() {
+  return (
+    <svg viewBox="0 0 260 28" fill="none" style={{ width: '100%', maxWidth: 260 }} aria-hidden="true">
+      {/* Center diamond */}
+      <rect x="126" y="10" width="8" height="8" fill="#B69A70" opacity="0.6"
+        transform="rotate(45 130 14)" />
+      {/* Lines */}
+      <line x1="0" y1="14" x2="118" y2="14" stroke="url(#bsl)" strokeWidth="0.7" />
+      <line x1="142" y1="14" x2="260" y2="14" stroke="url(#bsr)" strokeWidth="0.7" />
+      {/* Leaves left */}
+      <ellipse cx="90" cy="14" rx="9" ry="4" fill="#A8B5A0" opacity="0.45" transform="rotate(10 90 14)" />
+      <ellipse cx="68" cy="14" rx="7" ry="3.5" fill="#A8B5A0" opacity="0.35" transform="rotate(8 68 14)" />
+      <circle cx="104" cy="10" r="2" fill="#B69A70" opacity="0.4" />
+      {/* Leaves right */}
+      <ellipse cx="170" cy="14" rx="9" ry="4" fill="#A8B5A0" opacity="0.45" transform="rotate(-10 170 14)" />
+      <ellipse cx="192" cy="14" rx="7" ry="3.5" fill="#A8B5A0" opacity="0.35" transform="rotate(-8 192 14)" />
+      <circle cx="156" cy="10" r="2" fill="#B69A70" opacity="0.4" />
+      <defs>
+        <linearGradient id="bsl">
+          <stop offset="0%" stopColor="transparent" />
+          <stop offset="100%" stopColor="#B69A70" stopOpacity="0.6" />
+        </linearGradient>
+        <linearGradient id="bsr">
+          <stop offset="0%" stopColor="#B69A70" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="transparent" />
+        </linearGradient>
+      </defs>
     </svg>
   )
 }
 
-/* ---- The closed book cover face ---- */
-function BookCover() {
+/* ---- Corner botanical ---- */
+function Corner({ flip = false }: { flip?: boolean }) {
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'linear-gradient(160deg, #2C1F12 0%, #1A1108 60%, #241A0E 100%)',
-        borderRadius: '3px 12px 12px 3px',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: 'inset -4px 0 12px rgba(0,0,0,0.5), inset 2px 0 6px rgba(255,220,150,0.08)',
-      }}
-    >
-      {/* Spine line */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: '18px',
-        background: 'linear-gradient(90deg, #0E0A05 0%, #2C1F12 100%)',
-        borderRight: '1px solid rgba(196,168,122,0.3)',
-      }} />
-
-      {/* Gold border frame */}
-      <div style={{
-        position: 'absolute', inset: '12px 10px 12px 22px',
-        border: '1px solid rgba(196,168,122,0.45)',
-        borderRadius: '2px',
-      }} />
-      <div style={{
-        position: 'absolute', inset: '16px 14px 16px 26px',
-        border: '0.5px solid rgba(196,168,122,0.2)',
-        borderRadius: '1px',
-      }} />
-
-      {/* Corner botanicals */}
-      {[
-        { top: 14, left: 22, w: 36, transform: 'none' },
-        { top: 14, right: 10, w: 36, transform: 'scaleX(-1)' },
-        { bottom: 14, left: 22, w: 36, transform: 'scaleY(-1)' },
-        { bottom: 14, right: 10, w: 36, transform: 'scale(-1)' },
-      ].map((pos, i) => (
-        <div key={i} style={{ position: 'absolute', width: pos.w, ...pos }} aria-hidden="true">
-          <BookCorner flip={i === 1 || i === 3} />
-        </div>
-      ))}
-
-      {/* Center emblem */}
-      <div style={{
-        position: 'absolute', top: '50%', left: '55%',
-        transform: 'translate(-50%, -50%)',
-        textAlign: 'center',
-      }}>
-        {/* Wax-seal-style circle */}
-        <div style={{
-          width: 90, height: 90, borderRadius: '50%',
-          background: 'radial-gradient(circle at 38% 38%, #B8893A 0%, #7A5A20 60%, #5A3F10 100%)',
-          border: '1.5px solid rgba(196,168,122,0.5)',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,220,150,0.2)',
-          margin: '0 auto 10px',
-        }}>
-          <div style={{
-            fontFamily: "'Great Vibes', cursive",
-            fontSize: '22px',
-            color: '#FAF8F0',
-            lineHeight: 1,
-            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
-          }}>
-            A &amp; S
-          </div>
-        </div>
-
-        {/* Title */}
-        <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: '9px',
-          letterSpacing: '0.28em',
-          textTransform: 'uppercase',
-          color: 'rgba(196,168,122,0.8)',
-          marginTop: '4px',
-        }}>
-          Wedding Invitation
-        </div>
-
-        {/* Decorative lines */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', justifyContent: 'center' }}>
-          <div style={{ width: '24px', height: '0.5px', background: 'rgba(196,168,122,0.5)' }} />
-          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(196,168,122,0.6)' }} />
-          <div style={{ width: '24px', height: '0.5px', background: 'rgba(196,168,122,0.5)' }} />
-        </div>
-
-        <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: '8px',
-          letterSpacing: '0.22em',
-          color: 'rgba(196,168,122,0.5)',
-          marginTop: '8px',
-          textTransform: 'uppercase',
-        }}>
-          17 · Jan · 2027
-        </div>
-      </div>
-
-      {/* Subtle cloth texture overlay */}
-      <div style={{
-        position: 'absolute', inset: 0, opacity: 0.04,
-        backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)',
-        pointerEvents: 'none',
-      }} />
-    </div>
-  )
-}
-
-/* ---- The inner right page (visible after book opens) ---- */
-function BookInnerPage() {
-  return (
-    <div style={{
-      width: '100%', height: '100%',
-      background: 'linear-gradient(160deg, #FDFAF6 0%, #F8F4EE 100%)',
-      borderRadius: '0 12px 12px 0',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '24px 20px',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Page edge shadow */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, width: '12px',
-        background: 'linear-gradient(90deg, rgba(0,0,0,0.08) 0%, transparent 100%)',
-        pointerEvents: 'none',
-      }} />
-
-      {/* Gold frame */}
-      <div style={{
-        position: 'absolute', inset: '10px',
-        border: '1px solid rgba(182,154,112,0.35)',
-        borderRadius: '2px', pointerEvents: 'none',
-      }} />
-
-      {/* Corner accents */}
-      {[
-        { top: 8, left: 8 },
-        { top: 8, right: 8 },
-        { bottom: 8, left: 8 },
-        { bottom: 8, right: 8 },
-      ].map((pos, i) => (
-        <div key={i} style={{
-          position: 'absolute', width: 14, height: 14,
-          borderTop: i < 2 ? '1.5px solid rgba(182,154,112,0.6)' : 'none',
-          borderBottom: i >= 2 ? '1.5px solid rgba(182,154,112,0.6)' : 'none',
-          borderLeft: (i === 0 || i === 2) ? '1.5px solid rgba(182,154,112,0.6)' : 'none',
-          borderRight: (i === 1 || i === 3) ? '1.5px solid rgba(182,154,112,0.6)' : 'none',
-          ...pos,
-        }} aria-hidden="true" />
-      ))}
-
-      {/* Arabic */}
-      <div style={{
-        fontFamily: "'Scheherazade New', serif",
-        fontSize: 'clamp(13px, 3vw, 17px)',
-        color: '#B69A70',
-        direction: 'rtl',
-        lineHeight: 1.6,
-        marginBottom: '8px',
-        textAlign: 'center',
-      }}>
-        بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-      </div>
-
-      {/* Divider */}
-      <div style={{ width: '40px', height: '0.5px', background: 'rgba(182,154,112,0.5)', margin: '6px auto' }} />
-
-      {/* Names */}
-      <div style={{
-        fontFamily: "'Great Vibes', cursive",
-        fontSize: 'clamp(22px, 5vw, 30px)',
-        color: '#B69A70',
-        textAlign: 'center',
-        lineHeight: 1.2,
-      }}>
-        Dr. Amrin Fatin
-      </div>
-      <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: 'clamp(13px, 3vw, 16px)',
-        color: '#A8B5A0',
-        fontStyle: 'italic',
-        margin: '2px 0',
-      }}>
-        &amp;
-      </div>
-      <div style={{
-        fontFamily: "'Great Vibes', cursive",
-        fontSize: 'clamp(18px, 4vw, 24px)',
-        color: '#B69A70',
-        textAlign: 'center',
-        lineHeight: 1.2,
-      }}>
-        Dr. Muhammed Sanad Nafih
-      </div>
-
-      {/* Divider dots */}
-      <div style={{ display: 'flex', gap: '5px', margin: '8px 0', alignItems: 'center' }}>
-        <div style={{ width: 3, height: 3, borderRadius: '50%', background: '#C4A87A', opacity: 0.5 }} />
-        <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C4A87A', opacity: 0.7 }} />
-        <div style={{ width: 3, height: 3, borderRadius: '50%', background: '#C4A87A', opacity: 0.5 }} />
-      </div>
-
-      {/* Date */}
-      <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: 'clamp(10px, 2.5vw, 13px)',
-        color: '#9B8F85',
-        letterSpacing: '0.15em',
-        textAlign: 'center',
-        marginTop: '2px',
-      }}>
-        Sunday, 17 January 2027
-      </div>
-      <div style={{
-        fontFamily: "'Lato', sans-serif",
-        fontSize: 'clamp(9px, 2vw, 10px)',
-        color: '#B69A70',
-        letterSpacing: '0.2em',
-        textTransform: 'uppercase',
-        marginTop: '3px',
-      }}>
-        Club 6 Convention Center · Palakkad
-      </div>
-    </div>
+    <svg viewBox="0 0 50 50" fill="none" style={{ width: '100%', height: '100%',
+      transform: flip ? 'scaleX(-1)' : undefined }} aria-hidden="true">
+      <path d="M4 46 C14 34 26 24 40 10" stroke="#B69A70" strokeWidth="0.9"
+        strokeLinecap="round" opacity="0.5" />
+      <ellipse cx="16" cy="38" rx="7" ry="3" fill="#A8B5A0" opacity="0.45"
+        transform="rotate(-35 16 38)" />
+      <ellipse cx="27" cy="28" rx="6" ry="2.5" fill="#A8B5A0" opacity="0.38"
+        transform="rotate(-55 27 28)" />
+      <circle cx="11" cy="43" r="1.5" fill="#B69A70" opacity="0.4" />
+    </svg>
   )
 }
 
 /* ============================================================
-   Main BookOpenScene
+   LetterScene — The main letter card shown before invitation
    ============================================================ */
 export function EnvelopeScene({ onOpen }: EnvelopeSceneProps) {
-  const [phase, setPhase] = useState<'idle' | 'opening' | 'open' | 'transitioning'>('idle')
-  const [petalsActive, setPetalsActive] = useState(false)
-  const hasInteracted = useRef(false)
+  const [phase, setPhase] = useState<'idle' | 'breaking' | 'unfolding' | 'done'>('idle')
+  const [petals, setPetals] = useState(false)
+  const triggered = useRef(false)
 
   const handleTap = () => {
-    if (hasInteracted.current) return
-    hasInteracted.current = true
+    if (triggered.current) return
+    triggered.current = true
 
-    setPhase('opening')
-    setPetalsActive(true)
+    // Step 1: seal breaks
+    setPhase('breaking')
+    setPetals(true)
 
-    // Book is fully open
-    setTimeout(() => setPhase('open'), 1100)
+    // Step 2: letter slides away
+    setTimeout(() => setPhase('unfolding'), 520)
 
-    // Brief pause so user sees the inner page, then transition
-    setTimeout(() => setPhase('transitioning'), 2600)
-    setTimeout(() => onOpen(), 3100)
+    // Step 3: scene fades + mounts invitation
+    setTimeout(() => {
+      setPhase('done')
+      setTimeout(onOpen, 380)
+    }, 1700)
   }
 
-  // Book dimensions
-  const bookW = 'min(320px, 82vw)'
-  const bookH = 'min(420px, 70vh)'
+  const isOpening = phase === 'unfolding' || phase === 'done'
 
   return (
-    <AnimatePresence>
-      <motion.div
-        key="book-scene"
-        style={{
-          position: 'fixed', inset: 0,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          background: 'radial-gradient(ellipse at 50% 40%, #F0EBE0 0%, #E8E0D0 60%, #DDD5C4 100%)',
-          overflow: 'hidden',
+    <motion.div
+      style={{
+        position: 'fixed', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        background: 'radial-gradient(ellipse at 50% 38%, #EDE4D2 0%, #E2D6BE 55%, #D6C9A8 100%)',
+        overflow: 'hidden',
+      }}
+      animate={phase === 'done' ? { opacity: 0 } : { opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Soft vignette */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(80,60,20,0.2) 100%)',
+      }} aria-hidden="true" />
+
+      <FloatingPetals active={petals} intensity="medium" />
+
+      {/* Top message */}
+      <motion.p
+        initial={{ opacity: 0, y: -6 }}
+        animate={{
+          opacity: isOpening ? 0 : 1,
+          y: isOpening ? -12 : 0,
         }}
-        animate={phase === 'transitioning' ? { opacity: 0, scale: 1.04 } : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        transition={{ duration: isOpening ? 0.3 : 0.9, delay: isOpening ? 0 : 0.7 }}
+        style={{
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: 'clamp(13px, 3.5vw, 15px)',
+          color: '#7A6A50',
+          fontStyle: 'italic',
+          letterSpacing: '0.1em',
+          marginBottom: '28px',
+          textAlign: 'center',
+        }}
       >
-        {/* Soft vignette */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(100,80,50,0.18) 100%)',
-        }} aria-hidden="true" />
+        A beautiful celebration awaits...
+      </motion.p>
 
-        {/* Petals */}
-        <FloatingPetals active={petalsActive} intensity="medium" />
-
-        {/* Top message */}
-        <motion.p
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.9 }}
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(13px, 3.5vw, 15px)',
-            color: '#8A7A65',
-            letterSpacing: '0.12em',
-            fontStyle: 'italic',
-            marginBottom: '28px',
-            textAlign: 'center',
-          }}
-        >
-          A beautiful celebration awaits...
-        </motion.p>
-
-        {/* ========= BOOK ========= */}
+      {/* ========= THE LETTER ========= */}
+      <motion.div
+        role="button"
+        tabIndex={0}
+        aria-label="Tap to open your wedding invitation"
+        onClick={handleTap}
+        onKeyDown={e => e.key === 'Enter' && handleTap()}
+        style={{
+          width: 'min(340px, 88vw)',
+          cursor: phase === 'idle' ? 'pointer' : 'default',
+          position: 'relative',
+        }}
+        /* Idle: gentle float */
+        animate={
+          phase === 'idle'
+            ? { y: [0, -7, 0] }
+            : isOpening
+            ? { y: -80, opacity: 0, scale: 0.93, rotate: 1 }
+            : {}
+        }
+        transition={
+          phase === 'idle'
+            ? { repeat: Infinity, duration: 4, ease: 'easeInOut' }
+            : { duration: 0.85, ease: [0.4, 0, 0.2, 1] }
+        }
+        whileHover={phase === 'idle' ? { scale: 1.012 } : {}}
+      >
+        {/* Drop shadow beneath */}
         <motion.div
-          onClick={handleTap}
-          role="button"
-          tabIndex={0}
-          aria-label="Tap to open the wedding invitation"
-          onKeyDown={e => e.key === 'Enter' && handleTap()}
+          aria-hidden="true"
           style={{
-            cursor: phase === 'idle' ? 'pointer' : 'default',
-            position: 'relative',
-            // Perspective container
-            perspective: '1400px',
-            perspectiveOrigin: '50% 50%',
-            width: bookW,
-            height: bookH,
+            position: 'absolute', bottom: -20, left: '8%', right: '8%',
+            height: 20, borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(80,55,15,0.3) 0%, transparent 70%)',
+            filter: 'blur(6px)',
           }}
-          // Gentle idle float
-          animate={phase === 'idle' ? { y: [0, -7, 0] } : {}}
-          transition={phase === 'idle' ? { repeat: Infinity, duration: 4, ease: 'easeInOut' } : {}}
-          whileHover={phase === 'idle' ? { scale: 1.015 } : {}}
-        >
+          animate={isOpening ? { opacity: 0, scaleX: 0.6 } : { opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.5 }}
+        />
 
-          {/* ── Shadow beneath book ── */}
-          <motion.div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              bottom: '-24px', left: '10%', right: '10%',
-              height: '24px',
-              background: 'radial-gradient(ellipse, rgba(80,55,20,0.28) 0%, transparent 70%)',
-              borderRadius: '50%',
-              filter: 'blur(8px)',
-            }}
-            animate={phase === 'opening' || phase === 'open'
-              ? { scaleX: 1.3, opacity: 0.5 }
-              : { scaleX: 1, opacity: 1 }
-            }
-            transition={{ duration: 1, ease: 'easeOut' }}
-          />
-
-          {/* ── Book spine / back cover (static) ── */}
+        {/* ---- Paper body ---- */}
+        <div style={{
+          background: 'linear-gradient(158deg, #FDFAF4 0%, #F8F2E8 40%, #F3EDE0 100%)',
+          borderRadius: '2px',
+          boxShadow: `
+            0 28px 70px rgba(70,48,15,0.24),
+            0 10px 28px rgba(70,48,15,0.14),
+            0 2px 6px rgba(70,48,15,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.55)
+          `,
+          padding: 'clamp(22px,5vw,32px) clamp(18px,4vw,28px)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Paper micro-grain texture */}
           <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(160deg, #1A1108 0%, #0E0A05 100%)',
-            borderRadius: '3px 12px 12px 3px',
-            boxShadow: '4px 4px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
+            position: 'absolute', inset: 0, opacity: 0.025, pointerEvents: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+            backgroundSize: '200px 200px',
+          }} aria-hidden="true" />
+
+          {/* Outer border */}
+          <div style={{
+            position: 'absolute', inset: '8px',
+            border: '1px solid rgba(182,154,112,0.5)',
+            borderRadius: '1px', pointerEvents: 'none',
+          }} />
+          {/* Inner border */}
+          <div style={{
+            position: 'absolute', inset: '12px',
+            border: '0.5px solid rgba(182,154,112,0.22)',
+            borderRadius: '1px', pointerEvents: 'none',
           }} />
 
-          {/* ── Right inner page (revealed when cover opens) ── */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            borderRadius: '3px 12px 12px 3px',
-            overflow: 'hidden',
-          }}>
-            <BookInnerPage />
-          </div>
-
-          {/* ── Front cover (rotates open) ── */}
-          <motion.div
-            style={{
-              position: 'absolute', inset: 0,
-              transformOrigin: 'left center',
-              transformStyle: 'preserve-3d',
-              // Subtle lift on hover via parent
-            }}
-            animate={
-              phase === 'opening' || phase === 'open' || phase === 'transitioning'
-                ? { rotateY: -172 }
-                : { rotateY: 0 }
-            }
-            transition={{
-              duration: 1.05,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            {/* Front face */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              boxShadow: phase === 'idle'
-                ? '6px 0 24px rgba(0,0,0,0.5)'
-                : '2px 0 12px rgba(0,0,0,0.3)',
-            }}>
-              <BookCover />
+          {/* Corners */}
+          {[
+            { top: 6, left: 6, w: 36 },
+            { top: 6, right: 6, w: 36 },
+            { bottom: 6, left: 6, w: 36 },
+            { bottom: 6, right: 6, w: 36 },
+          ].map((pos, i) => (
+            <div key={i} style={{ position: 'absolute', width: pos.w, height: pos.w, ...pos }}
+              aria-hidden="true">
+              <Corner flip={i === 1 || i === 3} />
             </div>
+          ))}
 
-            {/* Back face of cover (inside of the front cover — cream colored) */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-              background: 'linear-gradient(135deg, #F5F0E8 0%, #EDE8DC 100%)',
-              borderRadius: '3px 12px 12px 3px',
-              boxShadow: 'inset 2px 0 10px rgba(0,0,0,0.08)',
-            }}>
-              {/* Inside cover decorative border */}
-              <div style={{
-                position: 'absolute', inset: '12px',
-                border: '1px solid rgba(182,154,112,0.3)',
-                borderRadius: '2px',
-              }} />
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <div style={{
-                  fontFamily: "'Great Vibes', cursive",
-                  fontSize: '18px',
-                  color: 'rgba(182,154,112,0.4)',
-                }}>
-                  With Love
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ── Page-turn shadow (sweeps across as cover opens) ── */}
+          {/* Fold crease line — fades on open */}
           <motion.div
             aria-hidden="true"
+            animate={isOpening ? { opacity: 0 } : { opacity: 1 }}
+            transition={{ duration: 0.4 }}
             style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(90deg, rgba(0,0,0,0.18) 0%, transparent 60%)',
-              borderRadius: '3px 12px 12px 3px',
+              position: 'absolute', left: '8%', right: '8%',
+              top: '50%', height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(150,120,60,0.28) 30%, rgba(150,120,60,0.28) 70%, transparent)',
               pointerEvents: 'none',
             }}
-            animate={
-              phase === 'opening' || phase === 'open' || phase === 'transitioning'
-                ? { opacity: 0 }
-                : { opacity: 1 }
-            }
-            transition={{ duration: 0.8, delay: 0.3 }}
           />
-        </motion.div>
 
-        {/* ── Tap hint ── */}
-        <motion.div
-          style={{ marginTop: 36, textAlign: 'center' }}
-          animate={
-            phase !== 'idle'
-              ? { opacity: 0, y: 6, pointerEvents: 'none' }
-              : { opacity: 1, y: 0 }
-          }
-          transition={{ duration: 0.4 }}
-        >
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
-          >
-            {/* Hand tap icon */}
-            <motion.div
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M7 11V6a2 2 0 014 0v5M7 11h4m-4 0v5a2 2 0 004 0v-5"
-                  stroke="#9A8060" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </motion.div>
-            <span style={{
+          {/* ---- Content ---- */}
+          <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+
+            {/* Arabic Bismillah */}
+            <div style={{
+              fontFamily: "'Scheherazade New', serif",
+              fontSize: 'clamp(14px, 4vw, 18px)',
+              color: '#B69A70',
+              direction: 'rtl',
+              lineHeight: 1.6,
+              marginBottom: '10px',
+            }}>
+              بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 40, height: '0.5px', background: 'rgba(182,154,112,0.5)', margin: '8px auto' }} />
+
+            {/* Label */}
+            <div style={{
               fontFamily: "'Lato', sans-serif",
-              fontSize: 'clamp(10px, 2.8vw, 12px)',
-              color: '#9A8060',
-              letterSpacing: '0.25em',
+              fontSize: 'clamp(8px, 2vw, 10px)',
+              letterSpacing: '0.28em',
               textTransform: 'uppercase',
+              color: '#A09080',
+              marginBottom: '10px',
               fontWeight: 300,
             }}>
-              Tap to Open
-            </span>
-          </motion.div>
+              Wedding Invitation
+            </div>
+
+            {/* Couple names */}
+            <div style={{
+              fontFamily: "'Great Vibes', cursive",
+              fontSize: 'clamp(26px, 7vw, 36px)',
+              color: '#8C7248',
+              lineHeight: 1.15,
+            }}>
+              Amrin &amp; Sanad
+            </div>
+
+            {/* Botanical strip */}
+            <div style={{ margin: '12px auto 14px', display: 'flex', justifyContent: 'center' }}>
+              <BotanicalStrip />
+            </div>
+
+            {/* Wax seal */}
+            <div style={{ margin: '4px 0 12px' }}>
+              <WaxSeal breaking={phase === 'breaking'} />
+            </div>
+
+            {/* Date */}
+            <div style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontSize: 'clamp(11px, 3vw, 14px)',
+              color: '#9B8B75',
+              letterSpacing: '0.18em',
+              marginBottom: '4px',
+            }}>
+              Sunday · 17 January 2027
+            </div>
+            <div style={{
+              fontFamily: "'Lato', sans-serif",
+              fontSize: 'clamp(8px, 2.2vw, 10px)',
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              color: '#B6A888',
+              fontWeight: 300,
+            }}>
+              Palakkad, Kerala
+            </div>
+
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tap hint */}
+      <motion.div
+        style={{ marginTop: 30, textAlign: 'center' }}
+        animate={
+          phase !== 'idle'
+            ? { opacity: 0, pointerEvents: 'none' }
+            : { opacity: [0.45, 1, 0.45] }
+        }
+        transition={{
+          duration: phase === 'idle' ? 2.4 : 0.3,
+          repeat: phase === 'idle' ? Infinity : 0,
+          ease: 'easeInOut',
+        }}
+      >
+        <motion.div
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}
+        >
+          {/* Hand tap icon */}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 11V6a2 2 0 014 0v5M9 11h4m-4 0v5a2 2 0 004 0v-5"
+              stroke="#9A8060" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{
+            fontFamily: "'Lato', sans-serif",
+            fontSize: 'clamp(10px, 2.8vw, 12px)',
+            color: '#9A8060',
+            letterSpacing: '0.25em',
+            textTransform: 'uppercase',
+            fontWeight: 300,
+          }}>
+            Tap to Open
+          </span>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </motion.div>
   )
 }
