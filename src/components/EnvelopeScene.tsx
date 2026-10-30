@@ -38,7 +38,7 @@ function WaxSeal({ breaking }: { breaking: boolean }) {
         <circle cx="50" cy="50" r="28" fill="#6A4010" />
         <text x="50" y="55" textAnchor="middle"
           fontFamily="'Great Vibes', cursive" fontSize="15" fill="#FAF3E0" opacity="0.95">
-          A &amp; S
+          A &amp; N
         </text>
         {/* Shine */}
         <ellipse cx="40" cy="40" rx="7" ry="4" fill="white" opacity="0.07"
