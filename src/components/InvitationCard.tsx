@@ -555,7 +555,7 @@ export function InvitationCard() {
           </div>
           <div className="font-calligraphy gold-shimmer"
             style={{ fontSize: 'clamp(38px,9vw,58px)', lineHeight: 1.15 }}>
-            Amrin &amp; Sanad
+            Amrin &amp; Nafih
           </div>
         </FadeIn>
 

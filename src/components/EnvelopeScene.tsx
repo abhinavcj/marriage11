@@ -303,7 +303,7 @@ export function EnvelopeScene({ onOpen }: EnvelopeSceneProps) {
               color: '#8C7248',
               lineHeight: 1.15,
             }}>
-              Amrin &amp; Sanad
+              Amrin &amp; Nafih
             </div>
 
             {/* Botanical strip */}
