@@ -4,7 +4,7 @@ export function AddToCalendar() {
   const [open, setOpen] = useState(false)
 
   const eventDetails = {
-    title: 'Nikah Ceremony — Amrin & Sanad',
+    title: 'Nikah Ceremony — Amrin & Nafih',
     description: 'You are cordially invited to the Nikah ceremony of Dr. Amrin Fatin and Dr. Muhammed Sanad Nafih. With the blessings of Almighty Allah.',
     location: 'Club 6 Convention Center, Palakkad, Kerala',
     // 17 Jan 2027 11:00 AM IST
@@ -32,7 +32,7 @@ END:VCALENDAR`
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'amrin-sanad-wedding.ics'
+    a.download = 'Amrin-Nafih-wedding.ics'
     a.click()
     URL.revokeObjectURL(url)
     setOpen(false)
